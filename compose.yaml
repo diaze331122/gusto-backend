@@ -1,0 +1,46 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: gusto-db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    logging:
+      options:
+        max-size: 1g
+    volumes:
+      - ./mongodb:/data/db
+    networks:
+      - dev-mongo-network
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack_dev_cont
+    hostname: localstack
+    stdin_open: true
+    tty: true
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - HOSTNAME_EXTERNAL=localstack
+      - AWS_DEFAULT_REGION=us-east-2
+      - AWS_ACCESS_KEY_ID=gusto-dev-access-key
+      - AWS_SECRET_ACCESS_KEY=gusto-dev-secret-key
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "./scripts/aws/aws-init.sh:/etc/localstack/init/ready.d/aws-init.sh"
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+networks:
+  dev-mongo-network:
+    driver: bridge
