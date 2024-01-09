@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                     return corsConfiguration;
                 }))
                 .oauth2ResourceServer((oauth2) ->
-                        oauth2.jwt(jwt-> jwt.jwkSetUri("https://dev-fej5oaqsv6la8gk5.us.auth0.com/.well-known/jwks.json"))
+                        oauth2.jwt(jwt-> jwt.jwkSetUri(System.getenv("jwk.uri")))
                 );
 
         return http.build();
